@@ -62,15 +62,18 @@ export interface UserProfile {
   email: string;
   displayName: string;
   photoURL: string;
+  phoneNumber?: string;
   role: 'admin' | 'user';
   createdAt: Timestamp;
 }
 
 export interface Order {
   id: string;
+  trackingNumber: string;
   userId: string;
   customerName: string;
-  customerNumber: string;
+  customerGmail: string;
+  customerPhone: string;
   totalAmount: number;
   paymentMethod: string;
   transactionId: string;

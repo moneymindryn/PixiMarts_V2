@@ -17,14 +17,25 @@ const MyOrders: React.FC = () => {
   useEffect(() => {
     if (!user) return;
 
+    console.log("MyOrders: Fetching orders for user:", user.uid);
     const q = query(
       collection(db, 'orders'),
-      where('userId', '==', user.uid),
-      orderBy('createdAt', 'desc')
+      where('userId', '==', user.uid)
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      setOrders(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order)));
+      const fetchedOrders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order));
+      // Sort client-side
+      fetchedOrders.sort((a, b) => {
+        const dateA = a.createdAt?.toDate?.() || new Date(0);
+        const dateB = b.createdAt?.toDate?.() || new Date(0);
+        return dateB.getTime() - dateA.getTime();
+      });
+      console.log("MyOrders: Fetched orders:", fetchedOrders);
+      setOrders(fetchedOrders);
+      setLoading(false);
+    }, (error) => {
+      console.error("MyOrders: Error fetching orders:", error);
       setLoading(false);
     });
 
@@ -87,8 +98,8 @@ const MyOrders: React.FC = () => {
               <div className="p-6 md:p-8">
                 <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
                   <div>
-                    <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Order ID</p>
-                    <p className="font-bold text-gray-900">#{order.id.slice(-8).toUpperCase()}</p>
+                    <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Tracking Number</p>
+                    <p className="font-bold text-gray-900">{order.trackingNumber || `#${order.id.slice(-8).toUpperCase()}`}</p>
                   </div>
                   <div className={`px-4 py-2 rounded-xl border flex items-center gap-2 font-bold text-sm ${getStatusClass(order.status)}`}>
                     {getStatusIcon(order.status)}

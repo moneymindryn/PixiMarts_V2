@@ -12,3 +12,7 @@ export function formatPrice(price: number) {
 export function generateOrderId() {
   return `PM-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
 }
+
+export function generateTrackingNumber() {
+  return `Pixi-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
+}

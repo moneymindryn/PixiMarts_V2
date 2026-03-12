@@ -33,12 +33,12 @@ const AdminLayout: React.FC = () => {
   };
 
   const menuItems = [
-    { name: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
-    { name: 'Orders', path: '/admin/orders', icon: ShoppingCart },
-    { name: 'Products', path: '/admin/products', icon: Package },
-    { name: 'Categories', path: '/admin/categories', icon: Layers },
-    { name: 'Users', path: '/admin/users', icon: Users },
-    { name: 'Settings', path: '/admin/settings', icon: Settings },
+    { name: 'Dashboard', path: '/admin-panel/dashboard', icon: LayoutDashboard },
+    { name: 'Orders', path: '/admin-panel/orders', icon: ShoppingCart },
+    { name: 'Products', path: '/admin-panel/products', icon: Package },
+    { name: 'Categories', path: '/admin-panel/categories', icon: Layers },
+    { name: 'Users', path: '/admin-panel/users', icon: Users },
+    { name: 'Settings', path: '/admin-panel/settings', icon: Settings },
   ];
 
   return (

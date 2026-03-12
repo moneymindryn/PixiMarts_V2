@@ -62,8 +62,10 @@ const AdminOrders: React.FC = () => {
           <table className="w-full text-left">
             <thead>
               <tr className="text-slate-500 text-xs font-bold uppercase tracking-widest border-b border-slate-800">
-                <th className="px-8 py-6">Order Info</th>
+                <th className="px-8 py-6">Tracking #</th>
                 <th className="px-8 py-6">Customer</th>
+                <th className="px-8 py-6">Gmail</th>
+                <th className="px-8 py-6">Transaction ID</th>
                 <th className="px-8 py-6">Items</th>
                 <th className="px-8 py-6">Amount</th>
                 <th className="px-8 py-6">Status</th>
@@ -75,17 +77,23 @@ const AdminOrders: React.FC = () => {
                 <tr key={order.id} className="hover:bg-slate-800/50 transition-colors group">
                   <td className="px-8 py-6">
                     <div>
-                      <p className="font-bold text-white mb-1">#{order.id.slice(-8).toUpperCase()}</p>
-                      <p className="text-xs text-slate-500">
-                        {order.createdAt?.toDate().toLocaleDateString()}
+                      <p className="font-bold text-white mb-1">{order.trackingNumber || 'N/A'}</p>
+                      <p className="text-[10px] text-slate-500 font-medium">
+                        {order.createdAt?.toDate().toLocaleString()}
                       </p>
                     </div>
                   </td>
                   <td className="px-8 py-6">
                     <div>
                       <p className="font-bold text-white mb-1">{order.customerName}</p>
-                      <p className="text-xs text-slate-500">{order.customerNumber}</p>
+                      <p className="text-[10px] text-slate-500 font-medium">{order.customerPhone}</p>
                     </div>
+                  </td>
+                  <td className="px-8 py-6">
+                    <p className="text-sm text-slate-300">{order.customerGmail || 'N/A'}</p>
+                  </td>
+                  <td className="px-8 py-6">
+                    <p className="text-sm font-mono text-indigo-400">{order.transactionId}</p>
                   </td>
                   <td className="px-8 py-6">
                     <div className="space-y-1">
@@ -98,7 +106,7 @@ const AdminOrders: React.FC = () => {
                   </td>
                   <td className="px-8 py-6">
                     <div>
-                      <p className="font-bold text-indigo-400">{formatPrice(order.totalAmount)}</p>
+                      <p className="font-bold text-white">{formatPrice(order.totalAmount)}</p>
                       <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tighter">{order.paymentMethod}</p>
                     </div>
                   </td>

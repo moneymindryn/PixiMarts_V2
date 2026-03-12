@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../firebase';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { LogIn, Mail, Lock, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -11,6 +12,16 @@ const AdminLogin: React.FC = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { user, profile } = useAuth();
+
+  React.useEffect(() => {
+    if (user && profile) {
+      const isAdmin = profile.role === 'admin' || user.email === 'admin@piximart.com';
+      if (isAdmin) {
+        navigate('/admin-panel/dashboard', { replace: true });
+      }
+    }
+  }, [user, profile, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,7 +29,7 @@ const AdminLogin: React.FC = () => {
     setError('');
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      navigate('/admin/dashboard');
+      navigate('/admin-panel/dashboard');
     } catch (err: any) {
       setError('Invalid email or password. Please try again.');
       console.error(err);

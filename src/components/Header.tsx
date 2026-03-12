@@ -25,11 +25,14 @@ const Header: React.FC<HeaderProps> = ({ onCartOpen }) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const isAdmin = profile?.role === 'admin' || user?.email === 'admin@piximart.com';
+
   const navLinks = [
     { name: 'Home', path: '/' },
     { name: 'Products', path: '/products' },
     { name: 'Contact', path: '/contact' },
     { name: 'Page', path: 'https://facebook.com/piximarts', external: true },
+    ...(isAdmin ? [{ name: 'Admin', path: '/admin-panel/dashboard' }] : []),
   ];
 
   return (
@@ -76,37 +79,27 @@ const Header: React.FC<HeaderProps> = ({ onCartOpen }) => {
               </Link>
             )
           ))}
-          
-          {user ? (
-            <Link
-              to="/profile"
-              className={cn(
-                'text-sm font-medium transition-colors hover:text-indigo-600 flex items-center gap-2',
-                location.pathname === '/profile' ? 'text-indigo-600' : 'text-gray-600'
-              )}
-            >
-              {profile?.photoURL ? (
-                <img src={profile.photoURL} alt="Profile" className="w-6 h-6 rounded-full border border-gray-200" />
-              ) : (
-                <UserIcon className="w-5 h-5" />
-              )}
-              Profile
-            </Link>
-          ) : (
-            <Link
-              to="/login"
-              className={cn(
-                'text-sm font-medium transition-colors hover:text-indigo-600',
-                location.pathname === '/login' ? 'text-indigo-600' : 'text-gray-600'
-              )}
-            >
-              Login
-            </Link>
-          )}
         </nav>
 
         {/* Right Actions */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 md:gap-4">
+          <Link
+            to={user ? "/profile" : "/login"}
+            className={cn(
+              "p-2 rounded-xl transition-all duration-300",
+              location.pathname === (user ? "/profile" : "/login")
+                ? "bg-indigo-50 text-indigo-600"
+                : "text-gray-600 hover:bg-gray-50 hover:text-indigo-600"
+            )}
+            title={user ? "Profile" : "Login"}
+          >
+            {profile?.photoURL ? (
+              <img src={profile.photoURL} alt="Profile" className="w-6 h-6 rounded-full border border-gray-200" />
+            ) : (
+              <UserIcon className="w-6 h-6" />
+            )}
+          </Link>
+
           <button
             onClick={onCartOpen}
             className="relative p-2 text-gray-600 hover:text-indigo-600 transition-colors"
@@ -178,31 +171,6 @@ const Header: React.FC<HeaderProps> = ({ onCartOpen }) => {
                     </Link>
                   )
                 ))}
-                
-                {user ? (
-                  <Link
-                    to="/profile"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className={cn(
-                      'text-lg font-medium transition-colors flex items-center gap-2',
-                      location.pathname === '/profile' ? 'text-indigo-600' : 'text-gray-600'
-                    )}
-                  >
-                    <UserIcon className="w-6 h-6" />
-                    Profile
-                  </Link>
-                ) : (
-                  <Link
-                    to="/login"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className={cn(
-                      'text-lg font-medium transition-colors',
-                      location.pathname === '/login' ? 'text-indigo-600' : 'text-gray-600'
-                    )}
-                  >
-                    Login
-                  </Link>
-                )}
               </nav>
             </motion.div>
           </>

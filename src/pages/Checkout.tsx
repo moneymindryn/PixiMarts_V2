@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
-import { formatPrice, generateOrderId } from '../utils/utils';
-import { Copy, Check, MessageCircle, ArrowLeft, Wallet, CreditCard } from 'lucide-react';
+import { formatPrice, generateTrackingNumber } from '../utils/utils';
+import { Copy, Check, ArrowLeft, Wallet, CreditCard, ShoppingBag, CheckCircle2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { doc, onSnapshot, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 import { AppSettings } from '../types';
@@ -17,9 +17,11 @@ const Checkout: React.FC = () => {
   const [paymentMethod, setPaymentMethod] = useState<'bKash' | 'Nagad' | 'Rocket'>('bKash');
   const [settings, setSettings] = useState<AppSettings | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
-    number: '',
+    gmail: '',
+    phone: '',
     transactionId: '',
   });
 
@@ -34,7 +36,7 @@ const Checkout: React.FC = () => {
 
   const adminNumber = settings?.paymentNumber || '01945220851';
 
-  if (cart.length === 0) {
+  if (cart.length === 0 && !showSuccess) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center text-center px-4">
         <h2 className="text-2xl font-bold text-gray-900 mb-4">Your cart is empty</h2>
@@ -59,13 +61,15 @@ const Checkout: React.FC = () => {
     setIsSubmitting(true);
     
     try {
-      const orderId = generateOrderId();
+      const trackingNumber = generateTrackingNumber();
       
       // Save to Firestore
       const orderData = {
+        trackingNumber,
         userId: user?.uid || 'guest',
         customerName: formData.name,
-        customerNumber: formData.number,
+        customerGmail: formData.gmail,
+        customerPhone: formData.phone,
         totalAmount: totalPrice,
         paymentMethod,
         transactionId: formData.transactionId,
@@ -75,36 +79,15 @@ const Checkout: React.FC = () => {
           title: item.title,
           quantity: item.quantity,
           price: item.salePrice,
-          variantName: item.selectedVariant?.name
+          variantName: item.selectedVariant?.name || null
         })),
         createdAt: serverTimestamp()
       };
 
       await addDoc(collection(db, 'orders'), orderData);
-
-      // WhatsApp Message
-      const productNames = cart.map(item => {
-        const variantInfo = item.selectedVariant ? ` [${item.selectedVariant.name}]` : '';
-        return `${item.title}${variantInfo} (x${item.quantity})`;
-      }).join(', ');
       
-      const whatsapp = settings?.whatsappNumber?.replace(/\D/g, '') || '8801838192595';
-      
-      const message = `*New Order from Pixi Marts*
---------------------------
-*Order ID:* ${orderId}
-*Product:* ${productNames}
-*Total Price:* ${formatPrice(totalPrice)}
-*Customer Name:* ${formData.name}
-*Customer Number:* ${formData.number}
-*Payment Method:* ${paymentMethod}
-*Transaction ID:* ${formData.transactionId}
---------------------------
-Please confirm my order. Thank you!`;
-
-      window.open(`https://wa.me/${whatsapp}?text=${encodeURIComponent(message)}`, '_blank');
       clearCart();
-      navigate(user ? '/my-orders' : '/');
+      setShowSuccess(true);
     } catch (error) {
       console.error("Order submission error:", error);
       alert("Failed to place order. Please try again.");
@@ -228,7 +211,7 @@ Please confirm my order. Thank you!`;
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">Your Name</label>
+              <label className="block text-sm font-bold text-gray-700 mb-2">Full Name</label>
               <input
                 required
                 type="text"
@@ -239,12 +222,23 @@ Please confirm my order. Thank you!`;
               />
             </div>
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">Your Phone Number</label>
+              <label className="block text-sm font-bold text-gray-700 mb-2">Gmail</label>
+              <input
+                required
+                type="email"
+                value={formData.gmail}
+                onChange={(e) => setFormData({ ...formData, gmail: e.target.value })}
+                className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-indigo-50 focus:border-indigo-200 transition-all font-medium"
+                placeholder="example@gmail.com"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-2">Phone Number</label>
               <input
                 required
                 type="tel"
-                value={formData.number}
-                onChange={(e) => setFormData({ ...formData, number: e.target.value })}
+                value={formData.phone}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                 className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-indigo-50 focus:border-indigo-200 transition-all font-medium"
                 placeholder="01XXX-XXXXXX"
               />
@@ -269,16 +263,47 @@ Please confirm my order. Thank you!`;
               {isSubmitting ? (
                 <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
-                <MessageCircle className="w-6 h-6" />
+                <ShoppingBag className="w-6 h-6" />
               )}
-              {isSubmitting ? 'Processing...' : 'Confirm via WhatsApp'}
+              {isSubmitting ? 'Processing...' : 'Order Now'}
             </button>
-            <p className="text-center text-xs text-gray-400 font-medium">
-              By clicking confirm, you will be redirected to WhatsApp to complete your order.
-            </p>
           </form>
         </div>
       </div>
+
+      {/* Success Modal */}
+      <AnimatePresence>
+        {showSuccess && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center px-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative bg-white w-full max-w-md p-8 md:p-10 rounded-[3rem] shadow-2xl text-center"
+            >
+              <div className="w-24 h-24 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                <CheckCircle2 className="w-12 h-12 text-emerald-500" />
+              </div>
+              <h2 className="text-3xl font-black text-gray-900 mb-4">Order Placed!</h2>
+              <p className="text-gray-500 font-medium mb-8">
+                Your order has been placed! Wait for confirmation.
+              </p>
+              <button
+                onClick={() => navigate('/my-orders')}
+                className="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold text-lg hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 active:scale-[0.98]"
+              >
+                Check your Order
+              </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
