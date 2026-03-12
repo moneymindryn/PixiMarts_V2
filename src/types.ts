@@ -56,3 +56,31 @@ export interface CartItem extends Product {
   quantity: number;
   selectedVariant?: ProductVariant;
 }
+
+export interface UserProfile {
+  uid: string;
+  email: string;
+  displayName: string;
+  photoURL: string;
+  role: 'admin' | 'user';
+  createdAt: Timestamp;
+}
+
+export interface Order {
+  id: string;
+  userId: string;
+  customerName: string;
+  customerNumber: string;
+  totalAmount: number;
+  paymentMethod: string;
+  transactionId: string;
+  status: 'Pending' | 'Delivered' | 'Cancelled';
+  items: {
+    productId: string;
+    title: string;
+    quantity: number;
+    price: number;
+    variantName?: string;
+  }[];
+  createdAt: Timestamp;
+}

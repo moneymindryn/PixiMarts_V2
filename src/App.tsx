@@ -10,10 +10,15 @@ import Products from './pages/Products';
 import ProductDetails from './pages/ProductDetails';
 import Checkout from './pages/Checkout';
 import Contact from './pages/Contact';
+import Login from './pages/Login';
+import Profile from './pages/Profile';
+import MyOrders from './pages/MyOrders';
 import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminProducts from './pages/AdminProducts';
 import AdminCategories from './pages/AdminCategories';
+import AdminOrders from './pages/AdminOrders';
+import AdminUsers from './pages/AdminUsers';
 import AdminSettings from './pages/AdminSettings';
 import AdminLayout from './components/AdminLayout';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -45,13 +50,20 @@ export default function App() {
                 <Route path="/product/:id" element={<ProductDetails />} />
                 <Route path="/checkout" element={<Checkout />} />
                 <Route path="/contact" element={<Contact />} />
+                <Route path="/login" element={<Login />} />
+                
+                {/* Protected User Routes */}
+                <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+                <Route path="/my-orders" element={<ProtectedRoute><MyOrders /></ProtectedRoute>} />
 
                 {/* Admin Routes */}
                 <Route path="/admin" element={<AdminLogin />} />
-                <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
+                <Route path="/admin" element={<ProtectedRoute requireAdmin><AdminLayout /></ProtectedRoute>}>
                   <Route path="dashboard" element={<AdminDashboard />} />
+                  <Route path="orders" element={<AdminOrders />} />
                   <Route path="products" element={<AdminProducts />} />
                   <Route path="categories" element={<AdminCategories />} />
+                  <Route path="users" element={<AdminUsers />} />
                   <Route path="settings" element={<AdminSettings />} />
                 </Route>
               </Routes>

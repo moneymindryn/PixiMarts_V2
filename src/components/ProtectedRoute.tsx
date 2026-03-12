@@ -1,9 +1,15 @@
 import React from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user, loading } = useAuth();
+interface ProtectedRouteProps {
+  children: React.ReactNode;
+  requireAdmin?: boolean;
+}
+
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requireAdmin = false }) => {
+  const { user, profile, loading } = useAuth();
+  const location = useLocation();
 
   if (loading) {
     return (
@@ -13,8 +19,12 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
     );
   }
 
-  if (!user || user.email !== 'moneymindryn@gmail.com') {
-    return <Navigate to="/admin" replace />;
+  if (!user) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  if (requireAdmin && profile?.role !== 'admin') {
+    return <Navigate to="/" replace />;
   }
 
   return <>{children}</>;

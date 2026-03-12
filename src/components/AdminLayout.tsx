@@ -9,7 +9,9 @@ import {
   Store,
   User,
   Menu,
-  X
+  X,
+  ShoppingCart,
+  Users
 } from 'lucide-react';
 import { auth } from '../firebase';
 import { signOut } from 'firebase/auth';
@@ -32,8 +34,10 @@ const AdminLayout: React.FC = () => {
 
   const menuItems = [
     { name: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
+    { name: 'Orders', path: '/admin/orders', icon: ShoppingCart },
     { name: 'Products', path: '/admin/products', icon: Package },
     { name: 'Categories', path: '/admin/categories', icon: Layers },
+    { name: 'Users', path: '/admin/users', icon: Users },
     { name: 'Settings', path: '/admin/settings', icon: Settings },
   ];
 

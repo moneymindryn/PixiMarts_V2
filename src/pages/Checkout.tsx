@@ -1,19 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import { formatPrice, generateOrderId } from '../utils/utils';
 import { Copy, Check, MessageCircle, ArrowLeft, Wallet, CreditCard } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { doc, onSnapshot } from 'firebase/firestore';
+import { doc, onSnapshot, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 import { AppSettings } from '../types';
 
 const Checkout: React.FC = () => {
   const { cart, totalPrice, clearCart } = useCart();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'bKash' | 'Nagad' | 'Rocket'>('bKash');
   const [settings, setSettings] = useState<AppSettings | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     number: '',
@@ -51,16 +54,43 @@ const Checkout: React.FC = () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const orderId = generateOrderId();
-    const productNames = cart.map(item => {
-      const variantInfo = item.selectedVariant ? ` [${item.selectedVariant.name}]` : '';
-      return `${item.title}${variantInfo} (x${item.quantity})`;
-    }).join(', ');
-    const whatsapp = settings?.whatsappNumber?.replace(/\D/g, '') || '8801838192595';
+    setIsSubmitting(true);
     
-    const message = `*New Order from Pixi Marts*
+    try {
+      const orderId = generateOrderId();
+      
+      // Save to Firestore
+      const orderData = {
+        userId: user?.uid || 'guest',
+        customerName: formData.name,
+        customerNumber: formData.number,
+        totalAmount: totalPrice,
+        paymentMethod,
+        transactionId: formData.transactionId,
+        status: 'Pending',
+        items: cart.map(item => ({
+          productId: item.id,
+          title: item.title,
+          quantity: item.quantity,
+          price: item.salePrice,
+          variantName: item.selectedVariant?.name
+        })),
+        createdAt: serverTimestamp()
+      };
+
+      await addDoc(collection(db, 'orders'), orderData);
+
+      // WhatsApp Message
+      const productNames = cart.map(item => {
+        const variantInfo = item.selectedVariant ? ` [${item.selectedVariant.name}]` : '';
+        return `${item.title}${variantInfo} (x${item.quantity})`;
+      }).join(', ');
+      
+      const whatsapp = settings?.whatsappNumber?.replace(/\D/g, '') || '8801838192595';
+      
+      const message = `*New Order from Pixi Marts*
 --------------------------
 *Order ID:* ${orderId}
 *Product:* ${productNames}
@@ -72,9 +102,15 @@ const Checkout: React.FC = () => {
 --------------------------
 Please confirm my order. Thank you!`;
 
-    window.open(`https://wa.me/${whatsapp}?text=${encodeURIComponent(message)}`, '_blank');
-    clearCart();
-    navigate('/');
+      window.open(`https://wa.me/${whatsapp}?text=${encodeURIComponent(message)}`, '_blank');
+      clearCart();
+      navigate(user ? '/my-orders' : '/');
+    } catch (error) {
+      console.error("Order submission error:", error);
+      alert("Failed to place order. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -227,10 +263,15 @@ Please confirm my order. Thank you!`;
             
             <button
               type="submit"
-              className="w-full bg-indigo-600 text-white py-5 rounded-2xl font-bold text-lg hover:bg-indigo-700 transition-all flex items-center justify-center gap-3 shadow-xl shadow-indigo-100 active:scale-[0.98] mt-8"
+              disabled={isSubmitting}
+              className="w-full bg-indigo-600 text-white py-5 rounded-2xl font-bold text-lg hover:bg-indigo-700 transition-all flex items-center justify-center gap-3 shadow-xl shadow-indigo-100 active:scale-[0.98] mt-8 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <MessageCircle className="w-6 h-6" />
-              Confirm via WhatsApp
+              {isSubmitting ? (
+                <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <MessageCircle className="w-6 h-6" />
+              )}
+              {isSubmitting ? 'Processing...' : 'Confirm via WhatsApp'}
             </button>
             <p className="text-center text-xs text-gray-400 font-medium">
               By clicking confirm, you will be redirected to WhatsApp to complete your order.

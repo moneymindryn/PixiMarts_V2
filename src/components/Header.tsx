@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ShoppingCart, Menu, X, Search, Store } from 'lucide-react';
+import { ShoppingCart, Menu, X, Store, User as UserIcon } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../utils/utils';
 
@@ -13,6 +14,7 @@ const Header: React.FC<HeaderProps> = ({ onCartOpen }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { totalItems } = useCart();
+  const { user, profile } = useAuth();
   const location = useLocation();
 
   useEffect(() => {
@@ -74,6 +76,33 @@ const Header: React.FC<HeaderProps> = ({ onCartOpen }) => {
               </Link>
             )
           ))}
+          
+          {user ? (
+            <Link
+              to="/profile"
+              className={cn(
+                'text-sm font-medium transition-colors hover:text-indigo-600 flex items-center gap-2',
+                location.pathname === '/profile' ? 'text-indigo-600' : 'text-gray-600'
+              )}
+            >
+              {profile?.photoURL ? (
+                <img src={profile.photoURL} alt="Profile" className="w-6 h-6 rounded-full border border-gray-200" />
+              ) : (
+                <UserIcon className="w-5 h-5" />
+              )}
+              Profile
+            </Link>
+          ) : (
+            <Link
+              to="/login"
+              className={cn(
+                'text-sm font-medium transition-colors hover:text-indigo-600',
+                location.pathname === '/login' ? 'text-indigo-600' : 'text-gray-600'
+              )}
+            >
+              Login
+            </Link>
+          )}
         </nav>
 
         {/* Right Actions */}
@@ -149,6 +178,31 @@ const Header: React.FC<HeaderProps> = ({ onCartOpen }) => {
                     </Link>
                   )
                 ))}
+                
+                {user ? (
+                  <Link
+                    to="/profile"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={cn(
+                      'text-lg font-medium transition-colors flex items-center gap-2',
+                      location.pathname === '/profile' ? 'text-indigo-600' : 'text-gray-600'
+                    )}
+                  >
+                    <UserIcon className="w-6 h-6" />
+                    Profile
+                  </Link>
+                ) : (
+                  <Link
+                    to="/login"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={cn(
+                      'text-lg font-medium transition-colors',
+                      location.pathname === '/login' ? 'text-indigo-600' : 'text-gray-600'
+                    )}
+                  >
+                    Login
+                  </Link>
+                )}
               </nav>
             </motion.div>
           </>
