@@ -108,7 +108,7 @@ const demoReviews = [
 const demoFAQs = [
   { question: 'How long does delivery take?', answer: 'Most digital products are delivered within 5 to 30 minutes after payment confirmation.' },
   { question: 'Is it safe to buy from Pixi Mart?', answer: 'Yes, we are a trusted platform with thousands of satisfied customers. We provide full warranty for our products.' },
-  { question: 'What payment methods do you accept?', answer: 'We currently accept bKash and Nagad for all transactions.' },
+  { question: 'What payment methods do you accept?', answer: 'We currently accept bKash, Nagad, and Rocket for all transactions.' },
 ];
 
 const defaultSettings = {
@@ -120,7 +120,8 @@ const defaultSettings = {
 };
 
 const generateRandomReviews = (count: number) => {
-  const names = ['Ariful Islam', 'Sabbir Ahmed', 'Mehedi Hasan', 'Tanvir Rahman', 'Rakib Hossain', 'Sumon Ali', 'Fahad Khan', 'Jasim Uddin', 'Kamal Pasha', 'Nadim Mahmud', 'Rifat Ahmed', 'Sajid Khan', 'Tarek Aziz', 'Zahid Hasan', 'Anisur Rahman', 'Babul Akter', 'Dalim Hossain', 'Emon Ahmed', 'Faruk Hossain', 'Gias Uddin'];
+  const maleNames = ['Ariful Islam', 'Sabbir Ahmed', 'Mehedi Hasan', 'Tanvir Rahman', 'Rakib Hossain', 'Sumon Ali', 'Fahad Khan', 'Jasim Uddin', 'Kamal Pasha', 'Nadim Mahmud', 'Rifat Ahmed', 'Sajid Khan', 'Tarek Aziz', 'Zahid Hasan', 'Anisur Rahman', 'Babul Akter', 'Dalim Hossain', 'Emon Ahmed', 'Faruk Hossain', 'Gias Uddin'];
+  const femaleNames = ['Nusrat Jahan', 'Sadia Afrin', 'Mim Akter', 'Sumaiya Islam', 'Farhana Yasmin', 'Jannatul Ferdous', 'Riya Ahmed', 'Tasnim Sultana', 'Lamia Islam', 'Afsana Mimi'];
   const comments = [
     'Excellent service! Got my account within 10 minutes.',
     'Very reliable. Highly recommended!',
@@ -141,8 +142,13 @@ const generateRandomReviews = (count: number) => {
 
   const reviews = [];
   for (let i = 0; i < count; i++) {
+    const isMale = Math.random() < 0.75;
+    const name = isMale 
+      ? maleNames[Math.floor(Math.random() * maleNames.length)] 
+      : femaleNames[Math.floor(Math.random() * femaleNames.length)];
+      
     reviews.push({
-      customerName: names[Math.floor(Math.random() * names.length)] + ' 🇧🇩',
+      customerName: name + ' 🇧🇩',
       rating: Math.random() > 0.2 ? 5 : 4,
       reviewText: comments[Math.floor(Math.random() * comments.length)],
       createdAt: new Date(Date.now() - Math.floor(Math.random() * 1000000000)) // Random past dates

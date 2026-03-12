@@ -51,33 +51,40 @@ const ProductDetails: React.FC = () => {
           const lowestPriceVariant = [...productData.variants].sort((a, b) => a.salePrice - b.salePrice)[0];
           setSelectedVariant(lowestPriceVariant);
         }
-        
-        // Fetch related products
-        const qRelated = query(
-          collection(db, 'products'), 
-          where('categories', 'array-contains-any', productData.categories),
-          limit(5)
-        );
-        onSnapshot(qRelated, (snapshot) => {
-          setRelatedProducts(snapshot.docs
-            .map(d => ({ id: d.id, ...d.data() } as Product))
-            .filter(p => p.id !== id)
-            .slice(0, 4)
-          );
-        });
-
-        // Fetch reviews
-        const qReviews = query(
-          collection(db, 'products', id, 'reviews'),
-          orderBy('createdAt', 'desc')
-        );
-        onSnapshot(qReviews, (snapshot) => {
-          setReviews(snapshot.docs.map(d => ({ id: d.id, ...d.data() } as Review)));
-        });
       } else {
+        console.error("Product not found:", id);
         navigate('/products');
       }
       setLoading(false);
+    }, (error) => {
+      console.error("Error fetching product:", error);
+      setLoading(false);
+    });
+
+    // Fetch related products
+    let unsubscribeRelated = () => {};
+    const fetchRelated = async (categories: string[]) => {
+      const qRelated = query(
+        collection(db, 'products'), 
+        where('categories', 'array-contains-any', categories),
+        limit(5)
+      );
+      unsubscribeRelated = onSnapshot(qRelated, (snapshot) => {
+        setRelatedProducts(snapshot.docs
+          .map(d => ({ id: d.id, ...d.data() } as Product))
+          .filter(p => p.id !== id)
+          .slice(0, 4)
+        );
+      });
+    };
+
+    // Fetch reviews
+    const qReviews = query(
+      collection(db, 'products', id, 'reviews'),
+      orderBy('createdAt', 'desc')
+    );
+    const unsubscribeReviews = onSnapshot(qReviews, (snapshot) => {
+      setReviews(snapshot.docs.map(d => ({ id: d.id, ...d.data() } as Review)));
     });
 
     const unsubscribeSettings = onSnapshot(doc(db, 'settings', 'general'), (docSnap) => {
@@ -86,11 +93,41 @@ const ProductDetails: React.FC = () => {
       }
     });
 
+    // We need to wait for product to get categories for related products
+    // This is a bit tricky with onSnapshot. 
+    // For now, let's just use the product state in another useEffect or handle it here.
+    
     return () => {
       unsubscribeProduct();
+      unsubscribeRelated();
+      unsubscribeReviews();
       unsubscribeSettings();
     };
   }, [id, navigate]);
+
+  // Handle related products when product changes
+  useEffect(() => {
+    if (!product || !id || !product.categories || product.categories.length === 0) {
+      setRelatedProducts([]);
+      return;
+    }
+
+    const qRelated = query(
+      collection(db, 'products'), 
+      where('categories', 'array-contains-any', product.categories),
+      limit(5)
+    );
+    
+    const unsubscribeRelated = onSnapshot(qRelated, (snapshot) => {
+      setRelatedProducts(snapshot.docs
+        .map(d => ({ id: d.id, ...d.data() } as Product))
+        .filter(p => p.id !== id)
+        .slice(0, 4)
+      );
+    });
+
+    return () => unsubscribeRelated();
+  }, [product?.categories, id]);
 
   const handleSubmitReview = async (e: React.FormEvent) => {
     e.preventDefault();

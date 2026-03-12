@@ -56,7 +56,8 @@ const AdminProducts: React.FC = () => {
   const [positivePercent, setPositivePercent] = useState('90');
   const [avgRating, setAvgRating] = useState('4.8');
 
-  const bdNames = ['Ariful Islam', 'Sabbir Ahmed', 'Mehedi Hasan', 'Tanvir Rahman', 'Rakib Hossain', 'Sumon Ali', 'Fahad Khan', 'Jasim Uddin', 'Kamal Pasha', 'Nadim Mahmud', 'Rifat Ahmed', 'Sajid Khan', 'Tarek Aziz', 'Zahid Hasan', 'Anisur Rahman', 'Babul Akter', 'Dalim Hossain', 'Emon Ahmed', 'Faruk Hossain', 'Gias Uddin', 'Abir Hasan', 'Siam Ahmed', 'Noyon Ali', 'Sujon Mahmud', 'Habib Wahid', 'Imran Hossain', 'Tahsan Khan', 'Arefin Shuvo', 'Mosharraf Karim', 'Chanchal Chowdhury'];
+  const maleNames = ['Ariful Islam', 'Sabbir Ahmed', 'Mehedi Hasan', 'Tanvir Rahman', 'Rakib Hossain', 'Sumon Ali', 'Fahad Khan', 'Jasim Uddin', 'Kamal Pasha', 'Nadim Mahmud', 'Rifat Ahmed', 'Sajid Khan', 'Tarek Aziz', 'Zahid Hasan', 'Anisur Rahman', 'Babul Akter', 'Dalim Hossain', 'Emon Ahmed', 'Faruk Hossain', 'Gias Uddin', 'Abir Hasan', 'Siam Ahmed', 'Noyon Ali', 'Sujon Mahmud', 'Habib Wahid', 'Imran Hossain', 'Tahsan Khan', 'Arefin Shuvo', 'Mosharraf Karim', 'Chanchal Chowdhury'];
+  const femaleNames = ['Nusrat Jahan', 'Sadia Afrin', 'Mim Akter', 'Sumaiya Islam', 'Farhana Yasmin', 'Jannatul Ferdous', 'Riya Ahmed', 'Tasnim Sultana', 'Lamia Islam', 'Afsana Mimi', 'Sultana Razia', 'Tania Ahmed', 'Mitu Akter', 'Sonia Akter', 'Priya Das', 'Anika Tabassum', 'Fariha Islam', 'Nadia Ahmed', 'Sabrina Khan', 'Ishrat Jahan'];
   
   const positivePhrases = [
     'Khub bhalo service, dhonnobad!', 'Fast delivery, product o bhalo.', 'Trusted seller, recommended.',
@@ -87,7 +88,9 @@ const AdminProducts: React.FC = () => {
       }
 
       generated.push({
-        customerName: bdNames[Math.floor(Math.random() * bdNames.length)] + ' 🇧🇩',
+        customerName: (Math.random() < 0.75 
+          ? maleNames[Math.floor(Math.random() * maleNames.length)] 
+          : femaleNames[Math.floor(Math.random() * femaleNames.length)]) + ' 🇧🇩',
         rating,
         reviewText: reviewText.trim(),
         createdAt: serverTimestamp()
@@ -251,9 +254,9 @@ const AdminProducts: React.FC = () => {
         banner,
         image: imageUrl,
         variants: processedVariants,
-        rating: editingProduct ? editingProduct.rating : (Math.random() * (5 - 4.5) + 4.5).toFixed(1),
-        reviewCount: editingProduct ? editingProduct.reviewCount : Math.floor(Math.random() * (500 - 10) + 10),
-        createdAt: editingProduct ? editingProduct.createdAt : serverTimestamp(),
+        rating: editingProduct ? Number(editingProduct.rating) : Number((Math.random() * (5 - 4.5) + 4.5).toFixed(1)),
+        reviewCount: editingProduct ? Number(editingProduct.reviewCount) : Math.floor(Math.random() * (500 - 10) + 10),
+        createdAt: editingProduct?.createdAt || serverTimestamp(),
       };
 
       let productRef;
@@ -474,7 +477,28 @@ const AdminProducts: React.FC = () => {
                       />
                     </div>
 
-                    {/* Regular and Sale Price removed from here as they are now in variations */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">Regular Price (৳)</label>
+                        <input 
+                          type="number"
+                          value={regularPrice}
+                          onChange={(e) => setRegularPrice(e.target.value)}
+                          className="w-full bg-slate-900 border border-slate-800 rounded-2xl py-4 px-4 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                          placeholder="0"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">Sale Price (৳)</label>
+                        <input 
+                          type="number"
+                          value={salePrice}
+                          onChange={(e) => setSalePrice(e.target.value)}
+                          className="w-full bg-slate-900 border border-slate-800 rounded-2xl py-4 px-4 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                          placeholder="0"
+                        />
+                      </div>
+                    </div>
 
                     {/* Variants Section */}
                     <div className="pt-4 space-y-4">

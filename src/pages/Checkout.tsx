@@ -12,7 +12,7 @@ const Checkout: React.FC = () => {
   const { cart, totalPrice, clearCart } = useCart();
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<'bKash' | 'Nagad'>('bKash');
+  const [paymentMethod, setPaymentMethod] = useState<'bKash' | 'Nagad' | 'Rocket'>('bKash');
   const [settings, setSettings] = useState<AppSettings | null>(null);
   const [formData, setFormData] = useState({
     name: '',
@@ -176,6 +176,17 @@ Please confirm my order. Thank you!`;
             >
               <CreditCard className="w-5 h-5" />
               Nagad
+            </button>
+            <button
+              onClick={() => setPaymentMethod('Rocket')}
+              className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl font-bold border-2 transition-all ${
+                paymentMethod === 'Rocket'
+                  ? 'bg-purple-50 border-purple-500 text-purple-600'
+                  : 'bg-white border-gray-100 text-gray-400'
+              }`}
+            >
+              <CreditCard className="w-5 h-5" />
+              Rocket
             </button>
           </div>
 
